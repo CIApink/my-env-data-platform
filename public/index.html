@@ -106,6 +106,7 @@
             color: white;
             width: 25%;
             text-align: right;
+            min-height: 20px; /* 确保有固定高度，防止UI跳动 */
         }
         
         .user-auth a {
@@ -116,6 +117,12 @@
         .user-auth .user-email {
             display: none;
             cursor: pointer;
+        }
+        
+        .user-auth .auth-loading {
+            display: inline-block;
+            font-size: 14px;
+            opacity: 0.8;
         }
         
         .user-auth .user-email:hover {

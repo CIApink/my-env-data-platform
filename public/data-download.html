@@ -626,15 +626,9 @@
     <!-- JavaScript -->
     <script src="js/auth.js"></script>
     <script>
-        // 模拟登录状态
-        let isLoggedIn = false;
-        let username = '';
-
         // 页面加载时检查登录状态
         document.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus();
-            updateAgreementState();
-            updateAuthUI(); // 更新导航栏用户认证UI
+            console.log("页面加载中...");
             
             // 初始化日期控件
             updateDateControls('day');
@@ -644,6 +638,12 @@
             if (activeItem) {
                 updatePageTitle(activeItem);
             }
+            
+            // 更新协议状态
+            updateAgreementState();
+            
+            // 检查登录状态并更新UI
+            checkLoginStatus();
         });
 
         // 更新日期控件根据选择的时间范围
@@ -843,86 +843,91 @@
             }
         }
         
-        // 检查登录状态
-        function checkLoginStatus() {
-            // 获取当前登录用户
-            const currentUser = getCurrentUser();
+        // 检查登录状态并更新UI
+        async function checkLoginStatus() {
+            console.log("检查登录状态...");
             
-            // 更新登录状态
-            if (currentUser && currentUser.approved) {
-                isLoggedIn = true;
-                username = currentUser.email || '用户';
-            } else {
-                isLoggedIn = false;
-                username = '';
-            }
-            
-            // 更新数据下载页面的UI
-            updateLoginUI();
-        }
-
-        // 更新登录状态UI
-        function updateLoginUI() {
-            const loginStatus = document.getElementById('loginStatus');
-            const loginText = document.getElementById('loginText');
-            const loginButton = document.getElementById('loginButton');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const exportBtn = document.getElementById('exportBtn');
-
-            if (isLoggedIn) {
-                loginText.textContent = `欢迎，${username}`;
-                loginButton.textContent = '注销';
-                loginStatus.classList.add('logged-in');
+            try {
+                // 获取当前登录用户
+                const user = await getCurrentUser();
+                const loginStatus = document.getElementById('loginStatus');
+                const downloadBtn = document.getElementById('downloadBtn');
+                const exportBtn = document.getElementById('exportBtn');
+                const agreementCheck = document.getElementById('agreementCheck');
                 
-                // 启用下载按钮
-                const agreementChecked = document.getElementById('agreementCheck').checked;
-                downloadBtn.disabled = !agreementChecked;
-                exportBtn.disabled = !agreementChecked;
-                
-                if (agreementChecked) {
-                    downloadBtn.textContent = '立即下载';
-                    exportBtn.textContent = '导出数据';
+                if (user) {
+                    console.log("用户已登录:", user.email);
+                    
+                    // 用户已登录，隐藏登录状态提示框
+                    loginStatus.style.display = 'none';
+                    
+                    // 启用或禁用下载按钮，取决于协议是否勾选
+                    downloadBtn.disabled = !agreementCheck.checked;
+                    exportBtn.disabled = !agreementCheck.checked;
+                    
+                    if (agreementCheck.checked) {
+                        downloadBtn.textContent = '立即下载';
+                        exportBtn.textContent = '导出数据';
+                    } else {
+                        downloadBtn.textContent = '请先同意协议';
+                        exportBtn.textContent = '请先同意协议';
+                    }
                 } else {
-                    downloadBtn.textContent = '请先同意协议';
-                    exportBtn.textContent = '请先同意协议';
+                    console.log("用户未登录");
+                    
+                    // 用户未登录，显示登录状态提示框
+                    loginStatus.style.display = 'flex';
+                    document.getElementById('loginText').textContent = '请登录后使用数据下载功能';
+                    document.getElementById('loginButton').textContent = '登录';
+                    
+                    // 禁用下载按钮
+                    downloadBtn.disabled = true;
+                    exportBtn.disabled = true;
+                    downloadBtn.textContent = '请登录后下载';
+                    exportBtn.textContent = '请登录后下载';
                 }
-            } else {
-                loginText.textContent = '请登录后使用数据下载功能';
-                loginButton.textContent = '登录';
-                loginStatus.classList.remove('logged-in');
-                
-                downloadBtn.disabled = true;
-                exportBtn.disabled = true;
-                downloadBtn.textContent = '请登录后下载';
-                exportBtn.textContent = '请登录后下载';
+            } catch (error) {
+                console.error("登录状态检查失败:", error);
             }
         }
 
         // 切换登录状态
-        function toggleLogin() {
-            if (isLoggedIn) {
-                // 注销 - 使用共享的logout函数
-                logout();
-                // 更新本地状态
-                isLoggedIn = false;
-                username = '';
-                updateLoginUI();
-            } else {
-                // 跳转到登录页面
-                window.location.href = 'sign in.html';
+        async function toggleLogin() {
+            try {
+                const user = await getCurrentUser();
+                
+                if (user) {
+                    console.log("执行注销操作...");
+                    // 用户已登录，执行登出
+                    await logout();
+                    console.log("注销完成，刷新页面状态");
+                    // 直接重新检查状态，无需延时
+                    await checkLoginStatus();
+                } else {
+                    console.log("跳转到登录页面");
+                    // 跳转到登录页面
+                    window.location.href = 'sign in.html';
+                }
+            } catch (error) {
+                console.error("切换登录状态出错:", error);
             }
         }
 
         // 更新下载按钮状态 - 供共享auth.js调用
         function updateDownloadButtons() {
+            console.log("从auth.js调用更新下载按钮");
             checkLoginStatus();
         }
 
         // 更新协议状态
         function updateAgreementState() {
             const agreementCheck = document.getElementById('agreementCheck');
+            
+            // 监听协议勾选变化
             agreementCheck.addEventListener('change', function() {
-                updateLoginUI();
+                console.log("协议勾选状态变更:", this.checked);
+                // 每次协议状态变化时重新检查登录状态并更新UI
+                checkLoginStatus();
             });
         }
 
@@ -958,9 +963,12 @@
         });
 
         // 下载功能
-        document.getElementById('downloadBtn').addEventListener('click', function() {
-            if (!isLoggedIn) {
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            const user = await getCurrentUser();
+            
+            if (!user) {
                 alert('请先登录');
+                window.location.href = 'sign in.html';
                 return;
             }
             
@@ -968,15 +976,23 @@
                 alert('请先同意用户协议');
                 return;
             }
+            
+            // 收集下载选项
+            const downloadOptions = collectDownloadOptions();
+            console.log('下载选项:', downloadOptions);
             
             // 模拟下载
             alert('正在准备下载数据...');
+            // 这里可以添加实际的下载处理逻辑
         });
 
         // 导出功能
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            if (!isLoggedIn) {
+        document.getElementById('exportBtn').addEventListener('click', async function() {
+            const user = await getCurrentUser();
+            
+            if (!user) {
                 alert('请先登录');
+                window.location.href = 'sign in.html';
                 return;
             }
             
@@ -985,77 +1001,123 @@
                 return;
             }
             
+            // 收集导出选项
+            const exportOptions = collectDownloadOptions();
+            console.log('导出选项:', exportOptions);
+            
             // 模拟导出
             alert('正在导出数据...');
+            // 这里可以添加实际的导出处理逻辑
         });
+        
+        // 收集下载/导出选项
+        function collectDownloadOptions() {
+            const options = {};
+            
+            // 获取时间范围类型
+            const activeRangeBtn = document.querySelector('.time-range-selector .time-range-btn.active');
+            if (activeRangeBtn) {
+                options.timeRangeType = activeRangeBtn.getAttribute('data-range');
+                
+                // 根据不同的时间范围类型获取日期值
+                if (options.timeRangeType === 'year') {
+                    options.startYear = document.getElementById('startYear').value;
+                    options.endYear = document.getElementById('endYear').value;
+                } else if (options.timeRangeType === 'month') {
+                    options.startYear = document.getElementById('startYear').value;
+                    options.startMonth = document.getElementById('startMonth').value;
+                    options.endYear = document.getElementById('endYear').value;
+                    options.endMonth = document.getElementById('endMonth').value;
+                } else {
+                    options.startDate = document.getElementById('startDate').value;
+                    options.endDate = document.getElementById('endDate').value;
+                }
+            }
+            
+            // 获取选中的污染物
+            options.pollutants = [];
+            document.querySelectorAll('.pollutant-btn.active').forEach(btn => {
+                options.pollutants.push(btn.textContent);
+            });
+            
+            // 获取数据格式
+            const activeFormatBtn = document.querySelector('.control-section:nth-of-type(3) .time-range-btn.active');
+            if (activeFormatBtn) {
+                options.format = activeFormatBtn.textContent;
+            }
+            
+            return options;
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        const API_BASE_URL = 'http://localhost:5000/api';
-
-        // 用户注册
-        async function register(username, password) {
+        // 重要：请勿在此处重新定义与auth.js中重复的函数
+        // 检查登录状态并更新UI
+        async function checkLoginStatus() {
+            console.log("检查登录状态...");
+            
             try {
-                const response = await axios.post(`${API_BASE_URL}/register`, { username, password });
-                alert(response.data.message);
+                // 获取当前登录用户
+                const user = await getCurrentUser();
+                const loginStatus = document.getElementById('loginStatus');
+                const downloadBtn = document.getElementById('downloadBtn');
+                const exportBtn = document.getElementById('exportBtn');
+                const agreementCheck = document.getElementById('agreementCheck');
+                
+                if (user) {
+                    console.log("用户已登录:", user.email);
+                    
+                    // 用户已登录，隐藏登录状态提示框
+                    loginStatus.style.display = 'none';
+                    
+                    // 启用或禁用下载按钮，取决于协议是否勾选
+                    downloadBtn.disabled = !agreementCheck.checked;
+                    exportBtn.disabled = !agreementCheck.checked;
+                    
+                    if (agreementCheck.checked) {
+                        downloadBtn.textContent = '立即下载';
+                        exportBtn.textContent = '导出数据';
+                    } else {
+                        downloadBtn.textContent = '请先同意协议';
+                        exportBtn.textContent = '请先同意协议';
+                    }
+                } else {
+                    console.log("用户未登录");
+                    
+                    // 用户未登录，显示登录状态提示框
+                    loginStatus.style.display = 'flex';
+                    document.getElementById('loginText').textContent = '请登录后使用数据下载功能';
+                    document.getElementById('loginButton').textContent = '登录';
+                    
+                    // 禁用下载按钮
+                    downloadBtn.disabled = true;
+                    exportBtn.disabled = true;
+                    downloadBtn.textContent = '请登录后下载';
+                    exportBtn.textContent = '请登录后下载';
+                }
             } catch (error) {
-                alert(error.response.data.message);
+                console.error("登录状态检查失败:", error);
             }
         }
 
-        // 用户登录
-        async function login(username, password) {
-            try {
-                const response = await axios.post(`${API_BASE_URL}/login`, { username, password });
-                localStorage.setItem('token', response.data.token); // 保存 JWT
-                alert(response.data.message);
-                checkLoginStatus();
-            } catch (error) {
-                alert(error.response.data.message);
-            }
-        }
-
-        // 检查登录状态
-        function checkLoginStatus() {
-            const token = localStorage.getItem('token');
-            if (token) {
-                document.getElementById('loginText').textContent = '已登录';
-                document.getElementById('loginButton').textContent = '注销';
-                document.getElementById('downloadBtn').disabled = false;
-            } else {
-                document.getElementById('loginText').textContent = '请登录后使用数据下载功能';
-                document.getElementById('loginButton').textContent = '登录';
-                document.getElementById('downloadBtn').disabled = true;
-            }
-        }
-
-        // 注销
-        function logout() {
-            localStorage.removeItem('token');
-            checkLoginStatus();
-        }
-
-        // 数据下载
+        // 数据下载功能（保留此功能）
         async function downloadData(fileId) {
-            const token = localStorage.getItem('token');
-            if (!token) {
+            const user = await getCurrentUser();
+            if (!user) {
                 alert('请先登录');
                 return;
             }
 
             try {
                 const response = await axios.get(`${API_BASE_URL}/download/${fileId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${localStorage.getItem('supabase.auth.token')}` }
                 });
                 window.location.href = response.data.url; // 跳转到文件下载链接
             } catch (error) {
-                alert(error.response.data.message);
+                alert(error.response?.data?.message || '下载失败，请稍后重试');
             }
         }
-
-        // 初始化页面
-        document.addEventListener('DOMContentLoaded', checkLoginStatus);
     </script>
 </body>
 </html>
