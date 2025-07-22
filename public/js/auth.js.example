@@ -1,0 +1,21 @@
+/**
+ * 用户认证相关功能的共享JS文件 - 使用Supabase
+ */
+
+// 导入 Supabase 客户端
+let supabase;
+
+// 加载 Supabase 客户端
+async function loadSupabase() {
+  if (!supabase) {
+    // 在浏览器环境中动态导入
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    
+    // 使用环境变量或配置值
+    const supabaseUrl = 'YOUR_SUPABASE_URL'; // 替换为你的 Supabase URL
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'; // 替换为你的 Supabase 匿名密钥
+    
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabase;
+}
