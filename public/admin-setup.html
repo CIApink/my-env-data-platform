@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员权限设置 - MED环境数据平台</title>
+    <link rel="stylesheet" href="css/navbar.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/supabase-config.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <div class="min-h-screen pt-16 py-12">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">管理员权限设置</h1>
+                <p class="text-gray-600 mb-8">设置用户的管理员权限，用于测试管理面板功能</p>
+
+                <!-- 当前用户信息 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+                    <h2 class="text-lg font-semibold text-blue-900 mb-4">当前用户信息</h2>
+                    <div id="current-user-info" class="space-y-2">
+                        <p class="text-blue-800">加载中...</p>
+                    </div>
+                </div>
+
+                <!-- 权限设置表单 -->
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">权限操作</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- 设置当前用户为管理员 -->
+                        <div class="border-b border-gray-200 pb-6">
+                            <h3 class="text-md font-medium text-gray-900 mb-3">设置当前用户权限</h3>
+                            <div class="flex items-center space-x-4">
+                                <select id="role-select" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                                    <option value="user">普通用户</option>
+                                    <option value="admin">管理员</option>
+                                    <option value="super_admin">超级管理员</option>
+                                </select>
+                                <button id="update-role-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
+                                    更新权限
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-2">
+                                设置为管理员后，您将能够访问管理面板并管理其他用户
+                            </p>
+                        </div>
+
+                        <!-- 设置用户状态 -->
+                        <div class="border-b border-gray-200 pb-6">
+                            <h3 class="text-md font-medium text-gray-900 mb-3">设置用户状态</h3>
+                            <div class="flex items-center space-x-4">
+                                <select id="status-select" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                                    <option value="pending">待审核</option>
+                                    <option value="approved">已通过</option>
+                                    <option value="rejected">已拒绝</option>
+                                    <option value="suspended">已暂停</option>
+                                </select>
+                                <button id="update-status-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors">
+                                    更新状态
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-2">
+                                只有"已通过"状态的用户才能正常使用平台功能
+                            </p>
+                        </div>
+
+                        <!-- 创建测试用户 -->
+                        <div>
+                            <h3 class="text-md font-medium text-gray-900 mb-3">创建测试用户</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input id="test-email" type="email" placeholder="测试用户邮箱" 
+                                       class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                                <input id="test-name" type="text" placeholder="测试用户姓名" 
+                                       class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                                <select id="test-status" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                                    <option value="pending">待审核</option>
+                                    <option value="approved">已通过</option>
+                                </select>
+                                <button id="create-test-user-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors">
+                                    创建测试用户
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-2">
+                                创建测试用户用于测试管理面板的审核功能
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作按钮 -->
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <a href="admin-dashboard.html" 
+                       class="bg-indigo-500 hover:bg-indigo-600 text-white text-center px-6 py-3 rounded-md transition-colors">
+                        🔧 打开管理面板
+                    </a>
+                    <button id="test-data-btn" 
+                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-md transition-colors">
+                        📊 生成测试数据
+                    </button>
+                    <button id="clear-data-btn" 
+                            class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-md transition-colors">
+                        🗑️ 清理测试数据
+                    </button>
+                </div>
+
+                <!-- 操作日志 -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">操作日志</h2>
+                    <div id="operation-log" class="bg-gray-50 border border-gray-200 rounded-lg p-4 h-40 overflow-y-auto">
+                        <p class="text-gray-600 text-sm">操作日志将显示在这里...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化导航栏
+        initNavbar({ 
+            activeItem: 'service'
+        });
+
+        class AdminSetup {
+            constructor() {
+                this.currentUser = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadCurrentUser();
+                    this.bindEventListeners();
+                } catch (error) {
+                    this.log('初始化失败: ' + error.message, 'error');
+                }
+            }
+
+            async loadCurrentUser() {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error || !user) {
+                    throw new Error('用户未登录');
+                }
+
+                this.currentUser = user;
+
+                // 获取用户profile信息
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) {
+                    // 如果profile不存在，创建一个
+                    const { error: insertError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            full_name: user.user_metadata?.full_name || user.email,
+                            status: 'approved' // 默认设为已通过
+                        });
+
+                    if (insertError) {
+                        this.log('创建用户profile失败: ' + insertError.message, 'error');
+                    } else {
+                        this.log('已自动创建用户profile', 'success');
+                        // 重新获取profile
+                        await this.loadCurrentUser();
+                        return;
+                    }
+                }
+
+                this.updateCurrentUserDisplay(user, profile);
+                
+                // 更新选择器的当前值
+                if (profile) {
+                    document.getElementById('role-select').value = profile.role || 'user';
+                    document.getElementById('status-select').value = profile.status || 'pending';
+                }
+            }
+
+            updateCurrentUserDisplay(user, profile) {
+                const infoDiv = document.getElementById('current-user-info');
+                infoDiv.innerHTML = `
+                    <p><strong>邮箱:</strong> ${user.email}</p>
+                    <p><strong>用户ID:</strong> ${user.id}</p>
+                    <p><strong>当前角色:</strong> ${this.getRoleText(profile?.role || 'user')}</p>
+                    <p><strong>当前状态:</strong> ${this.getStatusText(profile?.status || 'pending')}</p>
+                    <p><strong>注册时间:</strong> ${new Date(user.created_at).toLocaleString('zh-CN')}</p>
+                `;
+            }
+
+            getRoleText(role) {
+                const roleMap = {
+                    user: '普通用户',
+                    admin: '管理员',
+                    super_admin: '超级管理员'
+                };
+                return roleMap[role] || role;
+            }
+
+            getStatusText(status) {
+                const statusMap = {
+                    pending: '待审核',
+                    approved: '已通过',
+                    rejected: '已拒绝',
+                    suspended: '已暂停'
+                };
+                return statusMap[status] || status;
+            }
+
+            bindEventListeners() {
+                document.getElementById('update-role-btn').addEventListener('click', () => this.updateRole());
+                document.getElementById('update-status-btn').addEventListener('click', () => this.updateStatus());
+                document.getElementById('create-test-user-btn').addEventListener('click', () => this.createTestUser());
+                document.getElementById('test-data-btn').addEventListener('click', () => this.generateTestData());
+                document.getElementById('clear-data-btn').addEventListener('click', () => this.clearTestData());
+            }
+
+            async updateRole() {
+                const role = document.getElementById('role-select').value;
+                
+                try {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ role })
+                        .eq('id', this.currentUser.id);
+
+                    if (error) throw error;
+
+                    this.log(`角色已更新为: ${this.getRoleText(role)}`, 'success');
+                    
+                    // 更新navbar
+                    if (window.navbar) {
+                        window.navbar.onLogin(this.currentUser.email, role);
+                    }
+
+                    await this.loadCurrentUser();
+                } catch (error) {
+                    this.log('更新角色失败: ' + error.message, 'error');
+                }
+            }
+
+            async updateStatus() {
+                const status = document.getElementById('status-select').value;
+                
+                try {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ status })
+                        .eq('id', this.currentUser.id);
+
+                    if (error) throw error;
+
+                    this.log(`状态已更新为: ${this.getStatusText(status)}`, 'success');
+                    await this.loadCurrentUser();
+                } catch (error) {
+                    this.log('更新状态失败: ' + error.message, 'error');
+                }
+            }
+
+            async createTestUser() {
+                const email = document.getElementById('test-email').value;
+                const name = document.getElementById('test-name').value;
+                const status = document.getElementById('test-status').value;
+
+                if (!email || !name) {
+                    this.log('请填写邮箱和姓名', 'error');
+                    return;
+                }
+
+                try {
+                    // 直接插入到profiles表
+                    const testUserId = crypto.randomUUID();
+                    const { error } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: testUserId,
+                            email: email,
+                            full_name: name,
+                            status: status,
+                            role: 'user',
+                            created_at: new Date().toISOString()
+                        });
+
+                    if (error) throw error;
+
+                    this.log(`测试用户已创建: ${name} (${email})`, 'success');
+                    
+                    // 清空表单
+                    document.getElementById('test-email').value = '';
+                    document.getElementById('test-name').value = '';
+                } catch (error) {
+                    this.log('创建测试用户失败: ' + error.message, 'error');
+                }
+            }
+
+            async generateTestData() {
+                const testUsers = [
+                    { email: 'test1@example.com', name: '张三', status: 'pending' },
+                    { email: 'test2@example.com', name: '李四', status: 'pending' },
+                    { email: 'test3@example.com', name: '王五', status: 'approved' },
+                    { email: 'test4@example.com', name: '赵六', status: 'rejected' },
+                    { email: 'test5@example.com', name: '钱七', status: 'suspended' }
+                ];
+
+                try {
+                    const testUsersData = testUsers.map(user => ({
+                        id: crypto.randomUUID(),
+                        email: user.email,
+                        full_name: user.name,
+                        status: user.status,
+                        role: 'user',
+                        organization: '测试机构',
+                        created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+                    }));
+
+                    const { error } = await supabase
+                        .from('profiles')
+                        .insert(testUsersData);
+
+                    if (error) throw error;
+
+                    this.log(`已生成 ${testUsers.length} 个测试用户`, 'success');
+                } catch (error) {
+                    this.log('生成测试数据失败: ' + error.message, 'error');
+                }
+            }
+
+            async clearTestData() {
+                if (!confirm('确定要清理所有测试数据吗？这将删除所有邮箱包含"test"或"example"的用户。')) {
+                    return;
+                }
+
+                try {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .delete()
+                        .or('email.like.%test%,email.like.%example%');
+
+                    if (error) throw error;
+
+                    this.log('测试数据已清理', 'success');
+                } catch (error) {
+                    this.log('清理测试数据失败: ' + error.message, 'error');
+                }
+            }
+
+            log(message, type = 'info') {
+                const logDiv = document.getElementById('operation-log');
+                const timestamp = new Date().toLocaleTimeString();
+                const color = type === 'success' ? 'text-green-600' : type === 'error' ? 'text-red-600' : 'text-blue-600';
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `text-sm ${color} mb-1`;
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                
+                logDiv.insertBefore(logEntry, logDiv.firstChild);
+                
+                // 保持最多20条日志
+                while (logDiv.children.length > 20) {
+                    logDiv.removeChild(logDiv.lastChild);
+                }
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminSetup();
+        });
+    </script>
+</body>
+</html>

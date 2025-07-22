@@ -92,6 +92,7 @@ class Navbar {
     checkLoginStatus() {
         // 检查是否有存储的用户信息
         const userEmail = localStorage.getItem('userEmail');
+        const userRole = localStorage.getItem('userRole');
         const loginSignupElement = document.querySelector('.login-signup');
         const userEmailElement = document.querySelector('.user-email');
         
@@ -100,6 +101,35 @@ class Navbar {
             loginSignupElement.style.display = 'none';
             userEmailElement.style.display = 'block';
             userEmailElement.textContent = `${userEmail} (点击注销)`;
+            
+            // 如果是管理员，添加管理面板链接
+            if (userRole && ['admin', 'super_admin'].includes(userRole)) {
+                this.addAdminLink();
+            }
+        }
+    }
+
+    /**
+     * 添加管理面板链接（仅管理员可见）
+     */
+    addAdminLink() {
+        const navMenu = document.querySelector('.nav-menu');
+        if (navMenu && !document.querySelector('.admin-link')) {
+            // 管理面板链接
+            const adminLink = document.createElement('a');
+            adminLink.href = 'admin-dashboard.html';
+            adminLink.className = 'nav-item admin-link';
+            adminLink.textContent = '🔧 管理面板';
+            adminLink.style.color = '#ffd700'; // 金色突出显示
+            navMenu.appendChild(adminLink);
+
+            // 权限设置链接
+            const setupLink = document.createElement('a');
+            setupLink.href = 'admin-setup.html';
+            setupLink.className = 'nav-item admin-link';
+            setupLink.textContent = '⚙️ 权限设置';
+            setupLink.style.color = '#ff6b6b'; // 红色突出显示
+            navMenu.appendChild(setupLink);
         }
     }
 
@@ -120,8 +150,9 @@ class Navbar {
     /**
      * 用户登录后调用
      */
-    onLogin(userEmail) {
+    onLogin(userEmail, userRole = 'user') {
         localStorage.setItem('userEmail', userEmail);
+        localStorage.setItem('userRole', userRole);
         this.checkLoginStatus();
     }
 
@@ -130,12 +161,19 @@ class Navbar {
      */
     onLogout() {
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('userRole');
         const loginSignupElement = document.querySelector('.login-signup');
         const userEmailElement = document.querySelector('.user-email');
+        const adminLink = document.querySelector('.admin-link');
         
         if (loginSignupElement && userEmailElement) {
             loginSignupElement.style.display = 'block';
             userEmailElement.style.display = 'none';
+        }
+        
+        // 移除管理面板链接
+        if (adminLink) {
+            adminLink.remove();
         }
     }
 }
