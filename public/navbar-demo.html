@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>示例页面 - MED环境数据平台</title>
+    <link rel="stylesheet" href="css/navbar.css">
+    <script src="js/navbar.js"></script>
+    <style>
+        /* 页面主体内容样式 */
+        .main-content {
+            margin-top: 60px; /* 与导航栏高度匹配 */
+            padding: 40px 20px;
+            min-height: calc(100vh - 60px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            color: var(--accent-blue);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .content-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: var(--brand-green);
+            margin-bottom: 15px;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            background: var(--brand-green);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .demo-btn:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏容器 - 将由JavaScript自动生成内容 -->
+    <div id="navbar-container"></div>
+
+    <!-- 主要内容区域 -->
+    <main class="main-content">
+        <div class="container">
+            <h1 class="page-title">导航栏组件示例页面</h1>
+            
+            <div class="content-section">
+                <h2 class="section-title">🎉 导航栏组件使用说明</h2>
+                <p>这是一个展示统一导航栏组件的示例页面。现在所有页面都可以使用相同的导航栏组件，实现：</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li>✅ <strong>统一样式</strong>：所有页面使用相同的导航栏样式</li>
+                    <li>✅ <strong>集中管理</strong>：只需修改一个CSS和JS文件即可更新所有页面</li>
+                    <li>✅ <strong>响应式设计</strong>：自动适配不同屏幕尺寸</li>
+                    <li>✅ <strong>活跃状态</strong>：自动高亮当前页面对应的导航项</li>
+                    <li>✅ <strong>用户状态</strong>：支持登录/登出状态管理</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h2 class="section-title">🔧 如何在新页面中使用</h2>
+                <p>在任何新的HTML页面中，只需要以下几步：</p>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li>引入CSS文件：<code>&lt;link rel="stylesheet" href="css/navbar.css"&gt;</code></li>
+                    <li>引入JS文件：<code>&lt;script src="js/navbar.js"&gt;&lt;/script&gt;</code></li>
+                    <li>添加导航栏容器：<code>&lt;div id="navbar-container"&gt;&lt;/div&gt;</code></li>
+                    <li>初始化导航栏：<code>initNavbar({ activeItem: 'your-page-id' });</code></li>
+                </ol>
+            </div>
+
+            <div class="content-section">
+                <h2 class="section-title">🚀 交互演示</h2>
+                <div class="demo-buttons">
+                    <button class="demo-btn" onclick="simulateLogin()">模拟登录</button>
+                    <button class="demo-btn" onclick="simulateLogout()">模拟登出</button>
+                    <button class="demo-btn" onclick="changeActiveItem()">切换活跃项</button>
+                    <button class="demo-btn" onclick="showNavbarInfo()">显示导航栏信息</button>
+                </div>
+                <div id="demo-output" style="margin-top: 20px; padding: 15px; background: white; border-radius: 5px; min-height: 50px;">
+                    点击上面的按钮来测试导航栏功能...
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h2 class="section-title">📝 配置选项</h2>
+                <p>导航栏组件支持以下配置选项：</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><code>activeItem</code>: 设置当前活跃的导航项ID</li>
+                    <li><code>showUserAuth</code>: 是否显示用户认证区域</li>
+                    <li><code>menuItems</code>: 自定义菜单项列表</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 初始化导航栏，设置当前页面为"主页"活跃状态
+        initNavbar({ 
+            activeItem: 'home' 
+        });
+
+        // 演示功能
+        function simulateLogin() {
+            const email = 'demo@example.com';
+            if (window.navbar) {
+                window.navbar.onLogin(email);
+            }
+            updateOutput(`已模拟登录用户：${email}`);
+        }
+
+        function simulateLogout() {
+            if (window.navbar) {
+                window.navbar.onLogout();
+            }
+            updateOutput('已模拟登出');
+        }
+
+        function changeActiveItem() {
+            const items = ['home', 'model', 'download', 'papers', 'map', 'service'];
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            if (window.navbar) {
+                window.navbar.setActiveItem(randomItem);
+            }
+            updateOutput(`已将活跃项切换为：${randomItem}`);
+        }
+
+        function showNavbarInfo() {
+            const info = {
+                '导航栏实例': window.navbar ? '已创建' : '未创建',
+                '当前配置': window.navbar ? window.navbar.options : '无',
+                '用户登录状态': localStorage.getItem('userEmail') ? '已登录' : '未登录'
+            };
+            updateOutput('导航栏信息：\n' + JSON.stringify(info, null, 2));
+        }
+
+        function updateOutput(message) {
+            const output = document.getElementById('demo-output');
+            output.innerHTML = `<pre style="margin: 0; white-space: pre-wrap;">${message}</pre>`;
+        }
+    </script>
+</body>
+</html>

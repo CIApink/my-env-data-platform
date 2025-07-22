@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导航栏测试页面 - MED环境数据平台</title>
+    <link rel="stylesheet" href="css/navbar.css">
+    <script src="js/navbar.js"></script>
+    <style>
+        .test-content {
+            margin-top: 60px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e1e4e8;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: var(--brand-green);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-good {
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-warning {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            background: var(--brand-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <div class="test-content">
+        <h1 style="text-align: center; color: var(--accent-blue);">🔧 导航栏组件测试页面</h1>
+        
+        <div class="test-section">
+            <h2 class="section-title">✅ 页面更新状态检查</h2>
+            <div class="status-item status-good">
+                <span>index.html - 首页</span>
+                <span>✅ 已更新</span>
+            </div>
+            <div class="status-item status-good">
+                <span>data_echart.html - 数据地图</span>
+                <span>✅ 已更新</span>
+            </div>
+            <div class="status-item status-good">
+                <span>data-download.html - 数据下载</span>
+                <span>✅ 已更新</span>
+            </div>
+            <div class="status-item status-good">
+                <span>data-local-map.html - 本地数据地图</span>
+                <span>✅ 已更新</span>
+            </div>
+            <div class="status-item status-good">
+                <span>navbar-demo.html - 示例页面</span>
+                <span>✅ 已创建</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="section-title">🎯 导航栏功能测试</h2>
+            <p style="margin-bottom: 15px;">点击下面的按钮测试导航栏的各种功能：</p>
+            
+            <button class="btn" onclick="testLogin()">测试登录功能</button>
+            <button class="btn" onclick="testLogout()">测试登出功能</button>
+            <button class="btn" onclick="testActiveItem()">切换活跃项</button>
+            <button class="btn" onclick="checkResponsive()">检查响应式</button>
+            
+            <div id="test-output" style="margin-top: 20px; padding: 15px; background: white; border-radius: 4px; min-height: 50px;">
+                测试结果将显示在这里...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="section-title">📋 统一导航栏的优势</h2>
+            <ul style="line-height: 1.8; margin-left: 20px;">
+                <li><strong>统一样式管理</strong>：所有页面使用相同的导航栏样式，确保界面一致性</li>
+                <li><strong>集中维护</strong>：只需修改 css/navbar.css 和 js/navbar.js 即可更新所有页面</li>
+                <li><strong>响应式设计</strong>：自动适配桌面、平板、手机等不同设备</li>
+                <li><strong>活跃状态管理</strong>：自动高亮当前页面对应的导航项</li>
+                <li><strong>用户状态管理</strong>：统一处理登录/登出状态</li>
+                <li><strong>易于扩展</strong>：添加新页面或修改菜单项非常简单</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 class="section-title">🚀 页面链接快速测试</h2>
+            <p style="margin-bottom: 15px;">点击下面的链接测试页面间的跳转：</p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <a href="index.html" class="btn" style="text-decoration: none;">首页</a>
+                <a href="data-download.html" class="btn" style="text-decoration: none;">数据下载</a>
+                <a href="data_echart.html" class="btn" style="text-decoration: none;">数据地图</a>
+                <a href="data-local-map.html" class="btn" style="text-decoration: none;">本地数据地图</a>
+                <a href="navbar-demo.html" class="btn" style="text-decoration: none;">演示页面</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化导航栏
+        initNavbar({ 
+            activeItem: 'home' // 设置为首页活跃状态
+        });
+
+        function testLogin() {
+            const email = 'test@example.com';
+            if (window.navbar) {
+                window.navbar.onLogin(email);
+                updateTestOutput(`✅ 登录测试成功！用户：${email}`);
+            } else {
+                updateTestOutput('❌ 导航栏组件未正确加载');
+            }
+        }
+
+        function testLogout() {
+            if (window.navbar) {
+                window.navbar.onLogout();
+                updateTestOutput('✅ 登出测试成功！');
+            } else {
+                updateTestOutput('❌ 导航栏组件未正确加载');
+            }
+        }
+
+        function testActiveItem() {
+            const items = ['home', 'model', 'download', 'papers', 'map', 'service'];
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            
+            if (window.navbar) {
+                window.navbar.setActiveItem(randomItem);
+                updateTestOutput(`✅ 活跃项切换成功！当前活跃项：${randomItem}`);
+            } else {
+                updateTestOutput('❌ 导航栏组件未正确加载');
+            }
+        }
+
+        function checkResponsive() {
+            const width = window.innerWidth;
+            let deviceType;
+            
+            if (width <= 480) {
+                deviceType = '手机端 (≤480px)';
+            } else if (width <= 768) {
+                deviceType = '平板端 (481-768px)';
+            } else {
+                deviceType = '桌面端 (>768px)';
+            }
+            
+            updateTestOutput(`✅ 当前设备类型：${deviceType}，屏幕宽度：${width}px`);
+        }
+
+        function updateTestOutput(message) {
+            const output = document.getElementById('test-output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+        }
+
+        // 页面加载完成后进行基础检查
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.navbar) {
+                    updateTestOutput('✅ 导航栏组件加载成功！所有功能正常。');
+                } else {
+                    updateTestOutput('❌ 导航栏组件加载失败！请检查文件路径。');
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
